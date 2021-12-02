@@ -19,7 +19,11 @@ class WebSearchActivity : AppCompatActivity() {
         binding.webView.webViewClient = WebViewClient() //prevents opening in browser app
         binding.webView.settings.javaScriptEnabled = true // required for search functionality on Kotlin and Android sites
 
-        val url = intent.getStringExtra("url")
+        var url = intent.getStringExtra("url")
+        if (savedInstanceState != null) {
+            url = savedInstanceState.getString("url")
+        }
+        
         binding.webView.loadUrl(url!!)
     }
 }
