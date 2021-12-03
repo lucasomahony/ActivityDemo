@@ -1,20 +1,41 @@
 package com.example.activitydemo
 
+import android.app.Activity
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.View
 import com.example.activitydemo.databinding.ActivityMainBinding
 import java.net.URLEncoder
+import androidx.activity.result.contract.ActivityResultContracts
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private val encodedSearchTerm : String
         get() = URLEncoder.encode(binding.etSearch.text.toString(),"UTF-8")
 
+    private var prevUrl : String? = null // this is a nullable string property named prevUrl that we instantiate it with a value of null. We need to specify the type as it cannot be inferred
+
+    private val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            result ->
+
+        if (result.resultCode == Activity.RESULT_OK) {
+            val url = result.data?.getStringExtra("url")
+            if (url != null) {
+                prevUrl = url
+                binding.btnPrevious.visibility = View.VISIBLE
+            } else {
+                binding.btnPrevious.visibility = View.INVISIBLE
+            }
+        }
+
+    }
+
+
     private fun loadWebActivity(url: String) {
         val intent = Intent(this, WebSearchActivity::class.java)
         intent.putExtra("url", url)
-        startActivity(intent)
+        resultLauncher.launch(intent)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,6 +56,9 @@ class MainActivity : AppCompatActivity() {
         }
         binding.btnAndroid.setOnClickListener{
             loadWebActivity("https://developer.android.com/s/results/?q=$encodedSearchTerm")
+        }
+        binding.btnPrevious.setOnClickListener {
+            loadWebActivity(prevUrl?: "")
         }
     }
 }
